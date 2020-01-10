@@ -95,13 +95,20 @@ fn main() {
         }
     }
 
+    let mut features: Vec<String> = vec![];
+    let mut bugs: Vec<String> = vec![];
+    let mut chores: Vec<String> = vec![];
+    let mut others: Vec<String> = vec![];
+
     for commit_id in revwalk.into_iter() {
-        let commit = match commit_id {
-            Ok(id) => match repo.find_commit(id) {
-                Ok(commit) => commit,
-                Err(e) => panic!("Error getting commit with id {}: {}", id, e),
-            },
+        let commit_id = match commit_id {
+            Ok(id) => id,
             Err(e) => panic!("Error with getting commit in revwalk: {}", e),
+        };
+        let find_commit = repo.find_commit(commit_id);
+        let commit = match find_commit {
+            Ok(c) => c,
+            Err(e) => panic!("Error getting commit with id {}: {}", commit_id, e),
         };
         for parent in commit.parents() {
             let mut diffopts = DiffOptions::new();
@@ -116,14 +123,47 @@ fn main() {
                 )
                 .unwrap();
             if diff.stats().unwrap().files_changed() > 0 {
-                println!(
-                    "* {}",
-                    String::from_utf8_lossy(commit.message_bytes())
-                        .lines()
-                        .next()
-                        .unwrap()
-                );
+                let commit_message_bytes = commit.message_bytes();
+                let message_string = String::from_utf8_lossy(commit_message_bytes);
+                let message = message_string.lines().next().unwrap();
+                if &message[0..9] == "[feature]" {
+                    features.push(message[9..].to_string());
+                } else if &message[0..5] == "[bug]" {
+                    bugs.push(message[5..].to_string());
+                } else if &message[0..5] == "[chore]" {
+                    chores.push(message[5..].to_string());
+                } else {
+                    others.push(message.to_string());
+                }
             }
+        }
+    }
+
+    if features.len() > 0 {
+        println!("### 🚀 Features");
+        for feature in features {
+            println!("* {}", feature);
+        }
+    }
+
+    if bugs.len() > 0 {
+        println!("### 🐛 Bugs");
+        for bug in bugs {
+            println!("* {}", bug);
+        }
+    }
+
+    if chores.len() > 0 {
+        println!("### 📝 Chores");
+        for chore in chores {
+            println!("* {}", chore);
+        }
+    }
+
+    if others.len() > 0 {
+        println!("### Everything else");
+        for other in others {
+            println!("* {}", other);
         }
     }
 
