@@ -33,6 +33,12 @@ fn get_pathspecs(app: &str) -> Vec<&'static str> {
 fn main() {
     let args = Cli::from_args();
 
+    // let url = "git@github.com:How-2-Do/doer.git";
+    // let repo = match Repository::clone(url, "/tmp/doer-release-notes") {
+    //     Ok(repo) => repo,
+    //     Err(e) => panic!("failed to clone: {}", e),
+    // };
+
     let repo = match Repository::open("/Users/travisj/Projects/doer") {
         Ok(repo) => repo,
         Err(e) => panic!("failed to open: {}", e),
@@ -128,7 +134,7 @@ fn main() {
                 let message = message_string.lines().next().unwrap();
                 if &message[0..9] == "[feature]" {
                     features.push(message[9..].to_string());
-                } else if &message[0..5] == "[bug]" {
+                } else if &message[0..5] == "[bug]" || &message[0..5] == "[fix]" {
                     bugs.push(message[5..].to_string());
                 } else if &message[0..5] == "[chore]" {
                     chores.push(message[5..].to_string());
@@ -147,7 +153,7 @@ fn main() {
     }
 
     if bugs.len() > 0 {
-        println!("### 🐛 Bugs");
+        println!("### 🐛 Fixes");
         for bug in bugs {
             println!("* {}", bug);
         }
