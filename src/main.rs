@@ -16,6 +16,8 @@ struct Cli {
     app: String,
     #[structopt(help = "Set Semver Increment Type", default_value = "patch")]
     inc_type: String,
+    #[structopt(help = "Previous version", short = "p", long = "previous")]
+    previous_version: Option<String>,
 }
 
 fn get_pathspecs(app: &str) -> Vec<&'static str> {
@@ -71,7 +73,10 @@ fn main() {
         }
     }
 
-    let most_recent_version_string = format!("refs/tags/{}/{}", args.app, max_version.to_string());
+    let most_recent_version_string = match args.previous_version {
+        Some(version) => format!("refs/tags/{}/{}", args.app, version),
+        None => format!("refs/tags/{}/{}", args.app, max_version.to_string()),
+    };
 
     match args.inc_type.as_ref() {
         "major" => max_version.increment_major(),
