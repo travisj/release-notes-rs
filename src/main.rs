@@ -3,13 +3,23 @@
 extern crate git2;
 extern crate regex;
 extern crate semver;
+extern crate serde;
 extern crate structopt;
+extern crate toml;
 
 use git2::{DiffOptions, Repository};
-
 use regex::Regex;
 use semver::Version;
+use serde::Deserialize;
+use std::fs;
+use std::path::Path;
 use structopt::StructOpt;
+
+#[derive(Deserialize)]
+struct Config {
+    access_token: String,
+    repo_path: String,
+}
 
 #[derive(StructOpt)]
 struct Cli {
@@ -35,13 +45,21 @@ fn get_pathspecs(app: &str) -> Vec<&'static str> {
 fn main() {
     let args = Cli::from_args();
 
+    let config_file = Path::new("./config.toml");
+    let conf: String = fs::read_to_string(config_file).unwrap();
+    let config: Config = toml::from_str(&conf).unwrap();
+
+    if false {
+        println!("config token: {}", config.access_token);
+    }
+
     // let url = "git@github.com:How-2-Do/doer.git";
     // let repo = match Repository::clone(url, "/tmp/doer-release-notes") {
     //     Ok(repo) => repo,
     //     Err(e) => panic!("failed to clone: {}", e),
     // };
 
-    let repo = match Repository::open("/Users/travisj/Projects/doer") {
+    let repo = match Repository::open(config.repo_path) {
         Ok(repo) => repo,
         Err(e) => panic!("failed to open: {}", e),
     };
