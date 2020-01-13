@@ -159,8 +159,8 @@ fn main() {
                     features.push(message[9..].to_string());
                 } else if &message[0..5] == "[bug]" || &message[0..5] == "[fix]" {
                     bugs.push(message[5..].to_string());
-                } else if &message[0..5] == "[chore]" {
-                    chores.push(message[5..].to_string());
+                } else if &message[0..7] == "[chore]" {
+                    chores.push(message[7..].to_string());
                 } else {
                     others.push(message.to_string());
                 }
